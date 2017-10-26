@@ -1,1 +1,1 @@
-worker: cd $HOME/heroku_output && dotnet "./Worker.dll"
+worker: cd $HOME/heroku_output && dotnet Worker.dll
