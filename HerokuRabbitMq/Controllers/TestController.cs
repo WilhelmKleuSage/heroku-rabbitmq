@@ -23,7 +23,18 @@ namespace HerokuRabbitMq.Controllers
         [HttpPost]
         public void Post([FromBody]RequestMessage value)
         {
-            var factory = new ConnectionFactory() { HostName = "localhost" };
+            var cloudAmqpUrl = Environment.GetEnvironmentVariable("CLOUDAMQP_URL");
+
+            var factory = new ConnectionFactory();
+            if (cloudAmqpUrl == null)
+            {
+                factory.HostName = "localhost";
+            }
+            else
+            {
+                factory.Uri = new Uri(cloudAmqpUrl);
+            }
+
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
