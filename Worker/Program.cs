@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Text;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
+using RabbitMQ.Client.MessagePatterns;
 
 namespace Worker
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             var cloudAmqpUrl = Environment.GetEnvironmentVariable("CLOUDAMQP_URL");
 
@@ -19,40 +19,57 @@ namespace Worker
             else
             {
                 factory.Uri = new Uri(cloudAmqpUrl);
+                factory.RequestedHeartbeat = 30;
             }
 
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
-                channel.QueueDeclare(queue: "test",
-                    durable: false,
-                    exclusive: false,
-                    autoDelete: false,
-                    arguments: null);
+                channel.QueueDeclare("test",
+                    false,
+                    false,
+                    false,
+                    null);
 
-                var consumer = new EventingBasicConsumer(channel);
-                consumer.Received += (model, ea) =>
+                using (var subscription = new Subscription(channel, "test", false))
                 {
-                    var body = ea.Body;
-                    var message = Encoding.UTF8.GetString(body);
-                    Console.WriteLine(" [x] Received {0}", message);
-                };
-                consumer.Shutdown += (model, e) =>
-                {
-                    Console.WriteLine("Shutdown " + e.ReplyText);
-                };
-                consumer.ConsumerCancelled += (sender, e) =>
-                {
-                    Console.WriteLine(sender.GetType());
-                    Console.WriteLine(sender.ToString());
-                    Console.WriteLine("Cancelled " + e.ConsumerTag);
-                };      
-                channel.BasicConsume(queue: "test",
-                    autoAck: true,
-                    consumer: consumer);
+                    while (true)
+                    {
+                        if (!channel.IsOpen)
+                        {
+                            Console.WriteLine(
+                                "The channel is no longer open, but we are still trying to process messages.");
+                            throw new InvalidOperationException("Channel is closed.");
+                        }
+                        if (!connection.IsOpen)
+                        {
+                            Console.WriteLine(
+                                "The connection is no longer open, but we are still trying to process message.");
+                            throw new InvalidOperationException("Connection is closed.");
+                        }
 
-                Console.WriteLine("Press [enter] to exit.");
-                Console.ReadLine();
+                        var gotMessage = subscription.Next(250, out var result);
+
+                        if (gotMessage)
+                        {
+                            Console.WriteLine("Received message");
+                            try
+                            {
+                                var body = result.Body;
+                                var message = Encoding.UTF8.GetString(body);
+                                Console.WriteLine(" [x] Received {0}", message);
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine("Exception caught while processing message. Will be bubbled up.", e);
+                                throw;
+                            }
+
+                            Console.WriteLine("Acknowledging message completion");
+                            subscription.Ack(result);
+                        }
+                    }
+                }
             }
         }
     }
