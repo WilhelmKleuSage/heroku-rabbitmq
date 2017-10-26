@@ -37,6 +37,14 @@ namespace Worker
                     var message = Encoding.UTF8.GetString(body);
                     Console.WriteLine(" [x] Received {0}", message);
                 };
+                consumer.Shutdown += (model, e) =>
+                {
+                    Console.WriteLine("Shutdown " + e.ReplyText);
+                };
+                consumer.ConsumerCancelled += (sender, e) =>
+                {
+                    Console.WriteLine("Cancelled " + e.ConsumerTag);
+                };      
                 channel.BasicConsume(queue: "test",
                     autoAck: true,
                     consumer: consumer);
