@@ -3,7 +3,7 @@
   "description": "Test dotnet app on heroku.",
   "buildpacks": [
     {
-      "url": "https://github.com/jincod/dotnetcore-buildpack"
+      "url": "https://github.com/WilhelmKleuSage/dotnetcore-buildpack"
     }
   ],
   "addons": [
