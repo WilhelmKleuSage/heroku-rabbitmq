@@ -43,6 +43,8 @@ namespace Worker
                 };
                 consumer.ConsumerCancelled += (sender, e) =>
                 {
+                    Console.WriteLine(sender.GetType());
+                    Console.WriteLine(sender.ToString());
                     Console.WriteLine("Cancelled " + e.ConsumerTag);
                 };      
                 channel.BasicConsume(queue: "test",
