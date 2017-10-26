@@ -1,0 +1,15 @@
+{
+  "name": "dotnet-heroku",
+  "description": "Test dotnet app on heroku.",
+  "buildpacks": [
+    {
+      "url": "https://github.com/jincod/dotnetcore-buildpack"
+    }
+  ],
+  "addons": [
+    {
+      "plan": "cloudamqp:lemur"
+    }
+  ],
+  "stack": "heroku-16"
+}

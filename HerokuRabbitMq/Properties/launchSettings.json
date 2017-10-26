@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "HerokuRabbitMq": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:8080/api/test",
+      "applicationUrl": "http://localhost:8080"
+    }
+  }
+}
