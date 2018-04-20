@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace HerokuRabbitMq
 {
@@ -17,9 +11,23 @@ namespace HerokuRabbitMq
             BuildWebHost(args).Run();
         }
 
-        public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
-                .Build();
+        public static IWebHost BuildWebHost(string[] args)
+        {
+            var webHost = WebHost.CreateDefaultBuilder(args)
+                .UseStartup<Startup>();
+
+            ConfigurePortBinding(webHost);
+            return webHost.Build();
+        }
+
+        private static void ConfigurePortBinding(IWebHostBuilder webHost)
+        {
+            var port = Environment.GetEnvironmentVariable("PORT");
+
+            if (!string.IsNullOrEmpty(port))
+            {
+                webHost.UseUrls("http://*:" + port);
+            }
+        }
     }
 }
