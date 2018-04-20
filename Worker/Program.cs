@@ -11,6 +11,11 @@ namespace Worker
         {
             var cloudAmqpUrl = Environment.GetEnvironmentVariable("CLOUDAMQP_URL");
 
+            foreach (System.Collections.DictionaryEntry env in Environment.GetEnvironmentVariables())
+            {
+                Console.WriteLine(env.Key + ":" + env.Value);
+            }
+
             var factory = new ConnectionFactory();
             if (cloudAmqpUrl == null)
             {
